@@ -2,7 +2,6 @@
 
 name: VariableSubstitution
 on: [push]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,3 +12,4 @@ jobs:
           files: 'DataTransfer/DataTransfer.py'
     env:
         DATA_ACCESS: ${{secrets.DATA_ACCESS}}
+
