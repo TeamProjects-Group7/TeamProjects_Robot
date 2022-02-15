@@ -3,10 +3,14 @@
 name: VariableSubstitution
 
 # Controls when the workflow will run
+<<<<<<< HEAD
 on [push]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+=======
+on: [push]
+>>>>>>> 506c21e478f7e4a93120810b7ec8ad7ed46b8471
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -17,6 +21,7 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+<<<<<<< HEAD
       steps:
     - uses: actions/checkout@v2
     - uses: microsoft/variable-substitution@v1 
@@ -24,3 +29,11 @@ jobs:
         files: 'DataTransfer.py'
     env:
         DATA_ACCESS: ${{secrets.DATA_ACCESS}}
+=======
+      -uses: actions/checkout@v2
+      uses: microsoft/variable-substitution@v1 
+        with:
+            files: 'DataTransfer.py'
+    env:
+        DATA_ACCESS: ${{secrets.DATA_ACCESS}}
+>>>>>>> 506c21e478f7e4a93120810b7ec8ad7ed46b8471
