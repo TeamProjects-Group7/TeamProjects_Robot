@@ -1,39 +1,15 @@
 # This is a workflow to use secrets as variables
 
 name: VariableSubstitution
-
-# Controls when the workflow will run
-<<<<<<< HEAD
-on [push]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-=======
 on: [push]
->>>>>>> 506c21e478f7e4a93120810b7ec8ad7ed46b8471
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-<<<<<<< HEAD
-      steps:
-    - uses: actions/checkout@v2
-    - uses: microsoft/variable-substitution@v1 
-    with:
-        files: 'DataTransfer.py'
-    env:
-        DATA_ACCESS: ${{secrets.DATA_ACCESS}}
-=======
-      -uses: actions/checkout@v2
-      uses: microsoft/variable-substitution@v1 
+      - uses: actions/checkout@v2
+      - uses: microsoft/variable-substitution@v1 
         with:
-            files: 'DataTransfer.py'
+          files: 'DataTransfer/DataTransfer.py'
     env:
         DATA_ACCESS: ${{secrets.DATA_ACCESS}}
->>>>>>> 506c21e478f7e4a93120810b7ec8ad7ed46b8471

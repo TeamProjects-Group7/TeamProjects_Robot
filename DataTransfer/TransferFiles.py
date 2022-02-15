@@ -1,6 +1,6 @@
 #python 3.6
 from github import Github
-
+DATA_ACCESS = ""
 def uploadFile(filename):
     folder_prefix = "Data/"
     filePath = folder_prefix + filename
