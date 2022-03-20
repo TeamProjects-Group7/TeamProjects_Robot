@@ -1,10 +1,17 @@
 import pyaudio
 import wave
 import os
+import time
+import sys 
+import contextlib
 
 class Microphone:
     def __init__(self):
         self.is_recording = False
+        self.format = pyaudio.paInt16 
+        self.channels = 2
+        self.framerate = 44400 
+        self.chunk = 1024
         with ignoreStderr():
             self.pyaudio = pyaudio.PyAudio()
 
@@ -12,75 +19,52 @@ class Microphone:
         if self.is_recording:
             self.stop_recording()
     
-    def get_new_filename(self):
+    def get_audio_file(self):
         path, dirs, files = next(os.walk("../Data/Audio"))
         file_count = len(files)
         filename = "../Data/Audio/" + str((file_count+1)) + ".wav"
         filename = os.path.abspath(filename)
         open(filename, "x")
         return filename
+    
+    def open_wave_file(self, filename):
+        wave_file = wave.open(filename, 'wb')
+        wave_file.setnchannels(self.channels)
+        wave_file.setsampwidth(self.pyaudio.get_sample_size(self.format))
+        wave_file.setframerate(self.framerate)
+        return wave_file
 
     def start_recording(self):
         if self.is_recording:
             return
 
-        # file = self.get_new_filename()
-        # self.wav_file = wave.open(file, 'rb')
-        
-        # def callback(in_data, frame_count, time_info, status):
-        #     data = self.wav_file.readframes(frame_count)
-        #     return (data, pyaudio.paContinue)
+        self.is_recording = True
 
-        # self.stream = self.pyaudio.open(format=self.pyaudio.get_format_from_width(self.wav_file.getsampwidth()),
-        #         channels=self.wav_file.getnchannels(),
-        #         rate=self.wav_file.getframerate(),
-        #         output=True,
-        #         stream_callback=callback)
+        filename = self.get_audio_file()
+        self.wave_file = self.open_wave_file(filename)
 
-        # self.stream.start_stream()
+        def callback(in_data, frame_count, time_info, status):
+            self.wave_file.writeframes(in_data)
+            return in_data, pyaudio.paContinue
 
-        sample_format = pyaudio.paInt16 
-        chanels = 2
-        smpl_rt = 44400 
-        seconds = 4
-        chunk = 1024 
-        self.stream = self.pyaudio.open(format=sample_format, channels=chanels,
-                 rate=smpl_rt , input=True,
-                 frames_per_buffer=chunk)
-
-        print('Recording...')
-        frames = []
-
-        for i in range(0, int(smpl_rt / chunk * seconds)):
-            data = self.stream.read(chunk)
-            frames.append(data)
-        
-        self.stream.stop_stream()
-        self.stream.close()
-        
-        self.pyaudio.terminate()
-        
-        print('Done !!! ')
-        
-        sf = wave.open('/home/pi/Development/TeamProjects_Robot/Data/Audio/1.wav', 'wb')
-        sf.setnchannels(chanels)
-        sf.setsampwidth(self.pyaudio.get_sample_size(sample_format))
-        sf.setframerate(smpl_rt)
-        sf.writeframes(b''.join(frames))
-        sf.close()
-        
+        self.stream = self.pyaudio.open(format=self.format, 
+            channels=self.channels,
+            rate=self.framerate, 
+            input=True,
+            frames_per_buffer=self.chunk, 
+            stream_callback=callback)        
+        self.stream.start_stream()              
 
     def stop_recording(self):
         if not self.is_recording:
             return
         self.stream.stop_stream()
         self.stream.close()
-        self.wav_file.close()
-
-import time, os, sys, contextlib
+        self.wave_file.close()
+        self.is_recording = False
 
 #pyaudio.PyAudio displays some debug messages which
-#are extra noise. We use this to hide the messages.
+#aren't helpful to see. We use this to hide the messages.
 @contextlib.contextmanager
 def ignoreStderr():
     devnull = os.open(os.devnull, os.O_WRONLY)
