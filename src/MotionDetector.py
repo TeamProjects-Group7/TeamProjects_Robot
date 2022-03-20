@@ -31,18 +31,18 @@ class MotionDetector:
 			if frame is None:
 				break
 
-			gray = processFrame(frame);
+			gray = processFrame(frame)
 
 			if referenceFrame is None:
 				referenceFrame = gray
 				continue
 
-			contours = getContoursAbsolute(referenceFrame, gray, False);
+			contours = getContoursAbsolute(referenceFrame, gray, False)
 			#contours = getContoursWeighted(referenceFrame, gray, 5, True)
 
-			text = checkMotion(contours, 5000, frame);
+			text = checkMotion(contours, 5000, frame)
 
-			updateStatus(frame, text);
+			updateStatus(frame, text)
 
 			cv2.imshow("Security Feed", frame)
 
