@@ -1,12 +1,36 @@
-﻿import os
+﻿from paho.mqtt.client import MQTTMessage
 from mqtt import *
+from MotionDetector import *
+import time
 
-def on_message(client, userdata, msg):
-    print(f"Received '{msg.payload.decode()}' from '{msg.topic}' topic")
+idle = True
+def set_idle(client, userdata, msg: MQTTMessage):
+    global idle
+    status = msg.payload.decode().lower()
+    if(status != "false" and status != "true"):
+        return;
 
-subscriber = subscribe(on_message, Topic.ALERT_ON)
+    if status == "false":
+        idle = False
+    else:
+        idle = True
+    print(f"Set idle state to {idle}\n")
 
-publisher = getClient()
-publish(publisher, "", Topic.ALERT_ON)
-publish(publisher, "test message", Topic.ALERT_ON)
-publish(publisher, "an alert happened", Topic.ALERT_ON)
+def main():
+    global idle
+
+    #rather than looping here we will probably check
+    #"idle" at various points in the application and
+    #exit main if its true
+    while idle == False:
+        print("Robot will function while idle is off")
+        time.sleep(5)
+
+
+subscriber = subscribe(set_idle, Topic.ROBOT_IDLE);
+while True:
+    while idle:
+        print("Currently idle. Waiting...")
+        time.sleep(5)
+
+    main()

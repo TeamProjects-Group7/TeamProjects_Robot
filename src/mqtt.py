@@ -7,6 +7,7 @@ from paho.mqtt import client as mqtt_client
 class Topic(Enum):
     ALERT_ON = 1
     ALERT_OFF = 2
+    ROBOT_IDLE = 3
 
 broker = 'broker.emqx.io'
 port = 1883
@@ -20,9 +21,13 @@ def connect_mqtt() -> mqtt_client:
         else:
             print("Failed to connect, return code %d\n", rc)
 
+    def on_disconnect(client, userdata, flags, rc):
+        print("Disconnected from MQTT Broker")
+
     client = mqtt_client.Client(f'python-mqtt-{random.randint(0, 100)}')
     client.username_pw_set(username, password)
     client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
     client.connect(broker, port)
     return client
 
