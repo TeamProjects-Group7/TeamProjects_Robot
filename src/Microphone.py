@@ -30,7 +30,7 @@ class Microphone:
         self.chunk = 1024
         with ignoreStderr():
             self.pyaudio = pyaudio.PyAudio()
-
+        self.mqttClient = connect_mqtt()
 
     def __del__(self):
         if self.is_recording:
@@ -82,7 +82,6 @@ class Microphone:
     
     def idleListen(self):
         alerted = False
-        RECORD_SECONDS = 5
         stream = self.pyaudio.open(
         format=self.format,
         channels=self.channels,
@@ -96,7 +95,8 @@ class Microphone:
             amplitude = getAmplitude(micData)
             decibels = 20*math.log10(amplitude)
             if(decibels > 20):
-                publish("Noise Alert", ALERT_ON)
+                publisher = getClient()
+                publish(publisher, "Noise Alert", Topic.ALERT_ON)
                 alerted = True
 
 #pyaudio.PyAudio displays some debug messages which
