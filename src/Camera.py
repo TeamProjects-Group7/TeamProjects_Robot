@@ -3,8 +3,8 @@ import time
 import os
 import sys 
 import contextlib
-from paho.mqtt.client import MQTTMessage
 from mqtt import *
+from pathlib import Path
 class Camera():
     #inittializing thread
     def __init__(self):
@@ -20,10 +20,12 @@ class Camera():
         for files in os.walk("Data"):
             self.data_files += 1
         #create footage name
-        footage_name = "Data/Footage" + (self.data_files+1) + self.format
-        open(footage_name)
+        abs_path = os.path.abspath('../Data/Footage')
+        footage_path = os.path.join(abs_path, str((self.data_files+1)) + self.format)
+        if not os.path.exists(footage_path):
+            open(footage_path, 'w')
         #start recording
-        self.camera.start_recording(footage_name)
+        self.camera.start_recording(footage_path)
 
         
     #run thread and record
