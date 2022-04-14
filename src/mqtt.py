@@ -9,10 +9,9 @@ class Topic(Enum):
     ALERT_OFF = 2
     ROBOT_IDLE = 3
 
-broker = 'broker.emqx.io'
-port = 1883
-username = 'group7robot'
-password = 'thisisntsecureohwell'
+broker = 'broker.hivemq.com'
+# username = 'group7robot'
+# password = 'thisisntsecureohwell'
 
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
@@ -25,16 +24,16 @@ def connect_mqtt() -> mqtt_client:
         print("Disconnected from MQTT Broker")
 
     client = mqtt_client.Client(f'python-mqtt-{random.randint(0, 100)}')
-    client.username_pw_set(username, password)
+    #client.username_pw_set(username, password)
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
-    client.connect(broker, port)
+    client.connect(broker)
     return client
 
 def getClient():
     client = connect_mqtt()
     client.loop_start()
-    return client;
+    return client
 
 def subscribe(on_message, topic : Topic):
     if not callable(on_message):

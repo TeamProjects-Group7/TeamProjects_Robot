@@ -1,6 +1,6 @@
 ﻿from paho.mqtt.client import MQTTMessage
 from mqtt import *
-from MotionDetector import *
+#from MotionDetector import *
 import time
 from Camera import *
 from Microphone import *
@@ -15,10 +15,10 @@ mD = MotionDetector()
 def set_idle(client, userdata, msg: MQTTMessage):
     global idle
     status = msg.payload.decode().lower()
-    if(status != "false" and status != "true"):
+    if(status != "notidling" and status != "idling"):
         return
 
-    if status == "false":
+    if status == "not idling":
         idle = False
     else:
         idle = True
@@ -60,9 +60,7 @@ def main():
             raise_alert(publisher)
 
 
-subscriber = subscribe(set_idle, Topic.ROBOT_IDLE);
-publisher = getClient()
-
+subscribe(set_idle, Topic.ROBOT_IDLE.name)
 while True:
     while idle:
         print("Currently idle. Waiting...")
