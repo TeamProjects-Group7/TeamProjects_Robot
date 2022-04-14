@@ -1,4 +1,5 @@
-from imutils.video import VideoStream
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 import datetime
 import imutils
 import time
@@ -6,26 +7,33 @@ import cv2
 
 class MotionDetector:
 	def __init__(self, cameraWarmupTime : float, framerate: int):
-		self.camera = VideoStream(src=0, framerate=framerate).start()
 		self.framerate = framerate
-		self.camera.frame
+		self.camera = PiCamera()
+		self.camera.resolution = (640, 480)
+		self.camera.framerate = self.framerate
+		self.rawCapture = PiRGBArray(self.camera, size=(640, 480))
 		time.sleep(cameraWarmupTime)
-		frame = self.camera.read()
+
+		self.camera.capture(self.rawCapture, format="bgr")
+		frame = self.rawCapture.array
 		cv2.imshow("Security Feed", frame)
+		
 		cv2.waitKey(1)
 
 	def __del__(self):
 		self.camera.stop()
 		cv2.destroyAllWindows()
-  
+
 
 	def scan(self, time: int):
 		frameCount = 0
 		referenceFrame = None
 		scanning = True
 		# loop over the frames of the video
-		while scanning:
-			frame = self.camera.read()
+		for capture in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
+			if not scanning:
+				break
+			frame = capture.array
 			text = "No Motion"
 
 			if frame is None:
@@ -51,8 +59,11 @@ class MotionDetector:
 			else:
 				frameCount += 1
 			cv2.waitKey(1)
+			
+			# clear the stream in preparation for the next frame
+			self.rawCapture.truncate(0)
 
-		frame = self.camera.read()
+		frame = self.read_camera()
 		cv2.imshow("Security Feed", frame)
 		cv2.waitKey(1)
 
