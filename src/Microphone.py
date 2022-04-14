@@ -37,11 +37,12 @@ class Microphone:
             self.stop_recording()
     
     def get_audio_file(self):
-        path, dirs, files = next(os.walk("../Data"))
+        path, dirs, files = next(os.walk("./Data"))
         file_count = len(files)
-        filename = "../Data" + str((file_count+1)) + ".wav"
+        filename = "./Data/" + str((file_count+1)) + ".wav"
         filename = os.path.abspath(filename)
-        open(filename, "x")
+        if not os.path.exists(filename):
+            open(filename, 'x')
         return filename
     
     def open_wave_file(self, filename):

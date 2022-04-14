@@ -4,13 +4,14 @@ from mqtt import *
 import time
 from Camera import *
 from Microphone import *
-from DataTransfer.TransferFiles import *
+from TransferFiles import *
 
 idle = True
 alerted = False
 camera = Camera()
 mic = Microphone()
-mD = MotionDetector() 
+#mD = MotionDetector() 
+publisher = getClient()
 
 def set_idle(client, userdata, msg: MQTTMessage):
     global idle
@@ -27,7 +28,7 @@ def set_idle(client, userdata, msg: MQTTMessage):
 def on_alert_off(client, userdata, msg:MQTTMessage):
     camera.stop()
     mic.stop_recording()
-    uploadAll()
+    #uploadAll()
     alerted = False
 
 def raise_alert(publisher):
@@ -36,15 +37,16 @@ def raise_alert(publisher):
     camera.start()
     mic.start_recording()
     count = 0
-    while(alerted & count <= 100):
+    #Fix amount of count and time.sleep()
+    #its longer than expected
+    while(alerted & count <= 1):
         time.sleep(5)
         count = count + 1
-    if(count >= 100):
-        camera.stop()
-        mic.stop_recording()
-        uploadAll()
-        alerted = False
-
+        if(count >= 1):
+            camera.stop()
+            mic.stop_recording()
+            #uploadAll()
+            alerted = False
 
 def main():
     global idle
@@ -56,8 +58,8 @@ def main():
         print("Robot will function while idle is off")
         if (mic.idleListen() >= -40):
             raise_alert(publisher)
-        if(mD.scan()):
-            raise_alert(publisher)
+        # if(mD.scan()):
+        #     raise_alert(publisher)
 
 
 subscribe(set_idle, Topic.ROBOT_IDLE.name)
