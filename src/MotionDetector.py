@@ -4,14 +4,17 @@ import datetime
 import imutils
 import time
 import cv2
+import os
 
 class MotionDetector:
 	def __init__(self, cameraWarmupTime : float, framerate: int):
 		self.framerate = framerate
 		self.camera = PiCamera()
-		self.camera.resolution = (640, 480)
+		self.frame_width = 640
+		self.frame_height = 480
+		self.camera.resolution = (self.frame_width, self.frame_height)
 		self.camera.framerate = self.framerate
-		self.rawCapture = PiRGBArray(self.camera, size=(640, 480))
+		self.rawCapture = PiRGBArray(self.camera, size=(self.frame_width, self.frame_height))
 		time.sleep(cameraWarmupTime)
 
 		self.camera.capture(self.rawCapture, format="bgr")
@@ -24,8 +27,21 @@ class MotionDetector:
 		self.camera.stop()
 		cv2.destroyAllWindows()
 
+	def get_filename():
+		data_files = 0
+		for files in os.walk("Data"):
+			data_files += 1
+		abs_path = os.path.abspath('./Data')
+		return os.path.join(abs_path, 'scan', str((data_files+1)) + '.avi')
 
-	def scan(self, time: int):
+	def scan(self, time: int, record_scan: bool):
+		if record_scan:
+			filename = self.get_filename()
+			out = cv2.VideoWriter(filename, 
+				cv2.VideoWriter_fourcc('M','J','P','G'), 
+				self.framerate, 
+				(self.frame_width, self.frame_height))
+		
 		frameCount = 0
 		referenceFrame = None
 		scanning = True
@@ -39,20 +55,24 @@ class MotionDetector:
 			if frame is None:
 				break
 
-			gray = processFrame(frame)
+			gray = self.processFrame(frame)
 
 			if referenceFrame is None:
 				referenceFrame = gray
 				continue
 
-			contours = getContoursAbsolute(referenceFrame, gray, False)
+			contours = self.getContoursAbsolute(referenceFrame, gray, False)
 			#contours = getContoursWeighted(referenceFrame, gray, 5, True)
 
-			text = checkMotion(contours, 5000, frame)
+			text = self.checkMotion(contours, 5000, frame)
 
-			updateStatus(frame, text)
+			self.updateStatus(frame, text)
 
 			cv2.imshow("Security Feed", frame)
+
+			if record_scan:
+				out.write(frame)
+
 
 			if (frameCount > (self.framerate * time)):
 				scanning = False
