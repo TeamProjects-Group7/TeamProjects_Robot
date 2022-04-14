@@ -10,12 +10,13 @@ idle = True
 alerted = False
 camera = Camera()
 mic = Microphone()
+mD = MotionDetector() 
 
 def set_idle(client, userdata, msg: MQTTMessage):
     global idle
     status = msg.payload.decode().lower()
     if(status != "false" and status != "true"):
-        return;
+        return
 
     if status == "false":
         idle = False
@@ -26,7 +27,7 @@ def set_idle(client, userdata, msg: MQTTMessage):
 def on_alert_off(client, userdata, msg:MQTTMessage):
     camera.stop()
     mic.stop_recording()
-    #upload all files to github
+    uploadAll()
     alerted = False
 
 def raise_alert(publisher):
@@ -41,7 +42,7 @@ def raise_alert(publisher):
     if(count >= 100):
         camera.stop()
         mic.stop_recording()
-        #upload all files to github
+        uploadAll()
         alerted = False
 
 
@@ -53,7 +54,9 @@ def main():
     #exit main if its true
     while idle == False:
         print("Robot will function while idle is off")
-        if (mic.idleListen() > 20):
+        if (mic.idleListen() >= -40):
+            raise_alert(publisher)
+        if(mD.scan()):
             raise_alert(publisher)
 
 
@@ -64,9 +67,5 @@ while True:
     while idle:
         print("Currently idle. Waiting...")
         time.sleep(5)
-       
-            
-            
-
 
     main()

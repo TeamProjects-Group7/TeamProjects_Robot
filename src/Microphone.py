@@ -37,9 +37,9 @@ class Microphone:
             self.stop_recording()
     
     def get_audio_file(self):
-        path, dirs, files = next(os.walk("../Data/Audio"))
+        path, dirs, files = next(os.walk("../Data"))
         file_count = len(files)
-        filename = "../Data/Audio/" + str((file_count+1)) + ".wav"
+        filename = "../Data" + str((file_count+1)) + ".wav"
         filename = os.path.abspath(filename)
         open(filename, "x")
         return filename
@@ -90,14 +90,10 @@ class Microphone:
         output=True,
         frames_per_buffer=self.chunk*2.0
         )
-        while alerted == False:
-            micData = stream.read(self.chunk)
-            amplitude = getAmplitude(micData)
-            decibels = 20*math.log10(amplitude)
-            if(decibels > 20):
-                publisher = getClient()
-                publish(publisher, "Noise Alert", Topic.ALERT_ON)
-                alerted = True
+        micData = stream.read(self.chunk)
+        amplitude = getAmplitude(micData)
+        decibels = 20*math.log10(amplitude)
+        return decibels
 
 #pyaudio.PyAudio displays some debug messages which
 #aren't helpful to see. We use this to hide the messages.

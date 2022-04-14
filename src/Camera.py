@@ -20,7 +20,7 @@ class Camera():
         for files in os.walk("Data"):
             self.data_files += 1
         #create footage name
-        abs_path = os.path.abspath('../Data/Footage')
+        abs_path = os.path.abspath('../Data')
         footage_path = os.path.join(abs_path, str((self.data_files+1)) + self.format)
         if not os.path.exists(footage_path):
             open(footage_path, 'w')
