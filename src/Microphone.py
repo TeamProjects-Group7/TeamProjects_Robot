@@ -4,6 +4,22 @@ import os
 import time
 import sys 
 import contextlib
+from paho.mqtt.client import MQTTMessage
+from mqtt import *
+import struct
+import math
+#Constants
+
+def getAmplitude(data):
+    count = len(data)/2
+    format = "%dh"%(count)
+    shorts = struct.unpack( format, data )
+    sum_squares = 0.0
+    for sample in shorts:
+        # normalize samples
+        n = sample * (1.0/32768.0)
+        sum_squares += n*n
+    return math.sqrt( sum_squares / count )
 
 class Microphone:
     def __init__(self):
@@ -14,6 +30,7 @@ class Microphone:
         self.chunk = 1024
         with ignoreStderr():
             self.pyaudio = pyaudio.PyAudio()
+        self.mqttClient = connect_mqtt()
 
     def __del__(self):
         if self.is_recording:
@@ -62,6 +79,21 @@ class Microphone:
         self.stream.close()
         self.wave_file.close()
         self.is_recording = False
+    
+    def idleListen(self):
+        alerted = False
+        stream = self.pyaudio.open(
+        format=self.format,
+        channels=self.channels,
+        rate=self.framerate,
+        input=True,
+        output=True,
+        frames_per_buffer=self.chunk*2.0
+        )
+        micData = stream.read(self.chunk)
+        amplitude = getAmplitude(micData)
+        decibels = -20*math.log10(amplitude)
+
 
 #pyaudio.PyAudio displays some debug messages which
 #aren't helpful to see. We use this to hide the messages.
