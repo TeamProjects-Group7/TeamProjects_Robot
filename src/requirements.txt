@@ -3,3 +3,4 @@ PyGitHub
 imutils
 opencv-python
 pyaudio
+asyncio
