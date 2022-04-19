@@ -4,3 +4,5 @@ picamera
 imutils
 opencv-python
 pyaudio
+picamera[array]
+asyncio

@@ -1,32 +1,45 @@
-from imutils.video import VideoStream
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 import datetime
 import imutils
 import time
 import cv2
+import os
 
-class MotionDetector:
+class Motion_Detector:
 	def __init__(self, cameraWarmupTime : float, framerate: int):
-		self.camera = VideoStream(src=0, framerate=framerate).start()
 		self.framerate = framerate
-		self.camera.frame
+		self.camera = PiCamera()
+		self.frame_width = 640
+		self.frame_height = 480
+		self.rawCapture = PiRGBArray(self.camera, size=(self.frame_width, self.frame_height))
+		self.camera.resolution = (self.frame_width, self.frame_height)
 		time.sleep(cameraWarmupTime)
-		frame = self.camera.read()
-		cv2.imshow("Security Feed", frame)
-		cv2.waitKey(1)
 
-	def __del__(self):
-		self.camera.stop()
-		cv2.destroyAllWindows()
-  
+	def get_filename(self):
+		data_files = 0
+		for files in os.walk("Data"):
+			data_files += 1
+		abs_path = os.path.abspath('./Data')
+		return os.path.join(abs_path, str((data_files+1)) + '.avi')
 
-	def scan(self, time: int):
+	def scan(self, time: int, record_scan: bool):
+		if record_scan:
+			filename = self.get_filename()
+			out = cv2.VideoWriter(filename, 
+				cv2.VideoWriter_fourcc('M','J','P','G'), 
+				self.framerate, 
+				(self.frame_width, self.frame_height))
+		
 		frameCount = 0
 		referenceFrame = None
 		scanning = True
 		detected = False
 		# loop over the frames of the video
-		while scanning:
-			frame = self.camera.read()
+		for capture in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):		
+			if not scanning:
+				break
+			frame = capture.array
 			text = "No Motion"
 
 			if frame is None:
@@ -36,27 +49,32 @@ class MotionDetector:
 
 			if referenceFrame is None:
 				referenceFrame = gray
+				self.rawCapture.truncate(0)
 				continue
 
 			contours = getContoursAbsolute(referenceFrame, gray, False)
 			#contours = getContoursWeighted(referenceFrame, gray, 5, True)
 
 			detected = checkMotion(contours, 5000, frame)
+			if detected:
+				text = "Motion detected"
+			else:
+				text = "Not detected"
+			
+			#Print status
+			print(text)
 
-			updateStatus(frame, text)
+			if record_scan:
+				out.write(frame)
 
-			cv2.imshow("Security Feed", frame)
 
 			if (frameCount > (self.framerate * time)):
 				scanning = False
 			else:
 				frameCount += 1
-			cv2.waitKey(1)
-
-		frame = self.camera.read()
-		cv2.imshow("Security Feed", frame)
-		cv2.waitKey(1)
-		return detected
+			
+			# clear the stream in preparation for the next frame
+			self.rawCapture.truncate(0)
 
 
 def processFrame(frame):
@@ -79,9 +97,9 @@ def getContoursAbsolute(referenceFrame, currentFrame, displayResults: bool):
 	contours = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
 		cv2.CHAIN_APPROX_SIMPLE)
 
-	if displayResults:
-		cv2.imshow("Thresh", thresh)
-		cv2.imshow("Frame Delta", frameDelta)
+	#if displayResults:
+		#cv2.imshow("Thresh", thresh)
+		#cv2.imshow("Frame Delta", frameDelta)
 
 	return imutils.grab_contours(contours)
 
@@ -95,9 +113,9 @@ def getContoursWeighted(referenceFrame, currentFrame, deltaThresh, displayResult
 	thresh = cv2.dilate(thresh, None, iterations=2)
 	contours = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-	if displayResults:
-		cv2.imshow("Thresh", thresh)
-		cv2.imshow("Frame Delta", frameDelta)
+	#if displayResults:
+		#cv2.imshow("Thresh", thresh)
+		#cv2.imshow("Frame Delta", frameDelta)
 
 	return imutils.grab_contours(contours)
 
