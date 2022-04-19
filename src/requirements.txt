@@ -4,3 +4,4 @@ picamera
 imutils
 opencv-python
 pyaudio
+asyncio
