@@ -38,7 +38,7 @@ class Motion_Detector:
 		# loop over the frames of the video
 		for capture in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):		
 			if not scanning:
-				break
+				return False
 			frame = capture.array
 			text = "No Motion"
 
@@ -75,6 +75,8 @@ class Motion_Detector:
 			
 			# clear the stream in preparation for the next frame
 			self.rawCapture.truncate(0)
+			if detected:
+				return detected
 
 
 def processFrame(frame):

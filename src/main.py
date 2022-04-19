@@ -5,13 +5,15 @@ import time
 from Camera import *
 from Microphone import *
 from TransferFiles import *
+from Robot_Line_Follower import Robot_Line_Follower
 
 idle = True
 alerted = False
 camera = Camera()
 mic = Microphone()
-#mD = MotionDetector() 
+mD = MotionDetector() 
 publisher = getClient()
+lf = Robot_Line_Follower()
 
 def set_idle(client, userdata, msg: MQTTMessage):
     global idle
@@ -54,12 +56,16 @@ def main():
     #rather than looping here we will probably check
     #"idle" at various points in the application and
     #exit main if its true
-    while idle == False:
+    while idle == False
         print("Robot will function while idle is off")
+        lf.start()
+        #put idle listen in a loop to check while robot is working
         if (mic.idleListen() >= -40):
             raise_alert(publisher)
-        # if(mD.scan()):
-        #     raise_alert(publisher)
+        lf.stop()
+        #stop for scanning
+        if(mD.scan(1, False)):
+            raise_alert(publisher)
 
 
 subscribe(set_idle, Topic.ROBOT_IDLE.name)
