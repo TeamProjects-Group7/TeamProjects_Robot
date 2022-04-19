@@ -24,11 +24,12 @@ def uploadFile(filename, repo):
     else:
         repo.create_file(filePath, "comitting files", content, branch="main")
 
-git_user = Github("Ask Asher for the access code")
-repo = git_user.get_user().get_repo("TeamProjectsIIData")
-local_files = os.listdir("Data/")
-for filename in local_files :
-    uploadFile(filename, repo)
-f.close()
+def uploadAll():
+    git_user = Github("ghp_Hfup8R9PaOtfKc3ESrTL5cB3uFPaNM1ufkiR")
+    repo = git_user.get_user().get_repo("TeamProjectsIIData")
+    local_files = os.listdir("Data/")
+    for filename in local_files :
+        uploadFile(filename, repo)
+    f.close()
 
 

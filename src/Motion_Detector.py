@@ -34,7 +34,7 @@ class Motion_Detector:
 		frameCount = 0
 		referenceFrame = None
 		scanning = True
-
+		detected = False
 		# loop over the frames of the video
 		for capture in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):		
 			if not scanning:
@@ -55,7 +55,11 @@ class Motion_Detector:
 			contours = getContoursAbsolute(referenceFrame, gray, False)
 			#contours = getContoursWeighted(referenceFrame, gray, 5, True)
 
-			text = checkMotion(contours, 5000, frame)
+			detected = checkMotion(contours, 5000, frame)
+			if detected:
+				text = "Motion detected"
+			else:
+				text = "Not detected"
 			
 			#Print status
 			print(text)
@@ -116,6 +120,7 @@ def getContoursWeighted(referenceFrame, currentFrame, deltaThresh, displayResult
 	return imutils.grab_contours(contours)
 
 def checkMotion(contours, minArea, frame):
+	detected = False
 	text = "Not Detected"
 	for c in contours:
 		# if the contour is too small, ignore it
@@ -127,7 +132,8 @@ def checkMotion(contours, minArea, frame):
 		(x, y, w, h) = cv2.boundingRect(c)
 		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 		text = "Motion Detected"
-	return text
+		detected = True
+	return detected
 
 def updateStatus(frame, statusText: str):
 	cv2.putText(frame, "Scanning...: {}".format(statusText), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)

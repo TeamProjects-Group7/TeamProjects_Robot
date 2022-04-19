@@ -37,11 +37,12 @@ class Microphone:
             self.stop_recording()
     
     def get_audio_file(self):
-        path, dirs, files = next(os.walk("../Data/Audio"))
+        path, dirs, files = next(os.walk("./Data"))
         file_count = len(files)
-        filename = "../Data/Audio/" + str((file_count+1)) + ".wav"
+        filename = "./Data/" + str((file_count+1)) + ".wav"
         filename = os.path.abspath(filename)
-        open(filename, "x")
+        if not os.path.exists(filename):
+            open(filename, 'x')
         return filename
     
     def open_wave_file(self, filename):
@@ -92,8 +93,8 @@ class Microphone:
         )
         micData = stream.read(self.chunk)
         amplitude = getAmplitude(micData)
-        decibels = -20*math.log10(amplitude)
-
+        decibels = 20*math.log10(amplitude)
+        return decibels
 
 #pyaudio.PyAudio displays some debug messages which
 #aren't helpful to see. We use this to hide the messages.
