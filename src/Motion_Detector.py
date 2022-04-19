@@ -26,7 +26,6 @@ class Motion_Detector:
 	def scan(self, time: int, record_scan: bool):
 		if record_scan:
 			filename = self.get_filename()
-			print(filename)
 			out = cv2.VideoWriter(filename, 
 				cv2.VideoWriter_fourcc('M','J','P','G'), 
 				self.framerate, 
